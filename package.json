@@ -2,6 +2,9 @@
   "name": "aws",
   "type": "module",
   "private": true,
+  "imports": {
+    "#internal/nuxt/paths": "./node_modules/@nuxt/nitro-server/dist/runtime/utils/paths.mjs"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

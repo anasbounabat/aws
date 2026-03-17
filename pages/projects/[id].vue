@@ -83,61 +83,70 @@ onMounted(refresh)
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50">
-    <header class="border-b bg-white">
-      <div class="mx-auto max-w-6xl p-4 flex items-center justify-between">
-        <div>
-          <NuxtLink to="/dashboard" class="text-sm text-slate-600 underline">Back</NuxtLink>
-          <div class="text-lg font-semibold mt-1">
-            {{ project?.name || 'Project' }}
-          </div>
-          <div class="text-sm text-slate-500">{{ project?.team_name }}</div>
-        </div>
-        <button class="text-sm rounded-xl border px-3 py-2" @click="refresh">Refresh</button>
+  <div>
+    <header class="flex items-end justify-between gap-4">
+      <div>
+        <NuxtLink to="/dashboard" class="text-sm text-sand-100/70 hover:text-sand-50 underline underline-offset-4">
+          Back
+        </NuxtLink>
+        <h1 class="title text-3xl text-sand-50 mt-2">{{ project?.name || 'Project' }}</h1>
+        <p class="text-sm text-sand-100/70 mt-1">{{ project?.team_name }}</p>
       </div>
+      <button class="text-sm rounded-xl bg-sand-100/10 hover:bg-sand-100/15 text-sand-50 px-3 py-2 transition" @click="refresh">
+        Refresh
+      </button>
     </header>
 
-    <main class="mx-auto max-w-6xl p-4">
-      <p v-if="error" class="text-sm text-red-600 mb-4">{{ error }}</p>
-      <div v-if="loading" class="text-slate-600">Loading…</div>
+    <div class="mt-6">
+      <p v-if="error" class="text-sm text-red-200 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 mb-4">
+        {{ error }}
+      </p>
+      <div v-if="loading" class="text-sand-100/70">Loading…</div>
 
       <template v-else>
-        <section class="rounded-2xl bg-white shadow p-4">
-          <h2 class="font-semibold">New task</h2>
-          <div class="mt-3 grid md:grid-cols-3 gap-2">
-            <input v-model="newTitle" placeholder="Title" class="rounded-xl border px-3 py-2 md:col-span-1" />
+        <section class="card p-5">
+          <h2 class="title text-2xl">New task</h2>
+          <p class="muted text-sm mt-1">Write a clear title and keep descriptions short.</p>
+          <div class="mt-4 grid md:grid-cols-3 gap-2">
+            <input v-model="newTitle" placeholder="Title" class="input md:col-span-1" />
             <input
               v-model="newDescription"
               placeholder="Description (optional)"
-              class="rounded-xl border px-3 py-2 md:col-span-2"
+              class="input md:col-span-2"
             />
           </div>
           <div class="mt-3">
-            <button class="rounded-xl bg-slate-900 text-white px-3 py-2" @click="createTask">Add</button>
+            <button class="btn-primary" @click="createTask">Add task</button>
           </div>
         </section>
 
         <section class="mt-6 grid md:grid-cols-3 gap-4">
-          <div v-for="c in columns" :key="c.key" class="rounded-2xl bg-white shadow p-4">
+          <div v-for="c in columns" :key="c.key" class="card p-5">
             <div class="flex items-center justify-between">
-              <h3 class="font-semibold">{{ c.title }}</h3>
-              <div class="text-xs text-slate-500">{{ tasksByStatus[c.key].length }}</div>
+              <h3 class="title text-xl">{{ c.title }}</h3>
+              <div class="pill">{{ tasksByStatus[c.key].length }}</div>
             </div>
 
             <div class="mt-4 space-y-3">
-              <div v-for="t in tasksByStatus[c.key]" :key="t.id" class="rounded-2xl border p-3">
+              <div
+                v-for="t in tasksByStatus[c.key]"
+                :key="t.id"
+                class="rounded-2xl border border-ink-950/10 bg-sand-50 p-3 hover:border-ink-950/20 transition"
+              >
                 <div class="flex items-start justify-between gap-2">
                   <div class="font-medium">{{ t.title }}</div>
-                  <button class="text-xs text-red-700 underline" @click="removeTask(t.id)">Delete</button>
+                  <button class="text-xs text-red-700 underline underline-offset-4" @click="removeTask(t.id)">
+                    Delete
+                  </button>
                 </div>
                 <div v-if="t.description" class="text-sm text-slate-600 mt-1">
                   {{ t.description }}
                 </div>
 
                 <div class="mt-3 flex items-center gap-2">
-                  <label class="text-xs text-slate-500">Status</label>
+                  <label class="text-xs text-ink-950/55">Status</label>
                   <select
-                    class="text-sm rounded-xl border px-2 py-1"
+                    class="text-sm rounded-xl bg-sand-100 border border-ink-950/10 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gold-400/50"
                     :value="t.status"
                     @change="updateStatus(t, ($event.target as HTMLSelectElement).value as any)"
                   >
@@ -148,9 +157,9 @@ onMounted(refresh)
                 </div>
 
                 <div v-if="taskAssets(t.id).length" class="mt-3">
-                  <div class="text-xs text-slate-500">Assets</div>
+                  <div class="text-xs text-ink-950/55">Assets</div>
                   <ul class="mt-1 space-y-1">
-                    <li v-for="a in taskAssets(t.id)" :key="a.id" class="text-xs text-slate-700 break-all">
+                    <li v-for="a in taskAssets(t.id)" :key="a.id" class="text-xs text-ink-950/70 break-all">
                       {{ a.s3_url }}
                     </li>
                   </ul>
@@ -160,7 +169,7 @@ onMounted(refresh)
           </div>
         </section>
       </template>
-    </main>
+    </div>
   </div>
 </template>
 

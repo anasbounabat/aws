@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'auth' })
+
 const auth = useAuth()
 const router = useRouter()
 
@@ -22,35 +24,34 @@ async function submit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-    <div class="w-full max-w-md rounded-2xl bg-white shadow p-6">
-      <h1 class="text-2xl font-semibold">Login</h1>
-      <p class="text-sm text-slate-500 mt-1">Access your boards</p>
+  <div>
+    <h1 class="title text-3xl">Welcome back</h1>
+    <p class="muted mt-1 text-sm leading-relaxed">
+      Sign in to access your projects and boards.
+    </p>
 
-      <form class="mt-6 space-y-4" @submit.prevent="submit">
-        <div>
-          <label class="text-sm font-medium">Email</label>
-          <input v-model="email" type="email" required class="mt-1 w-full rounded-xl border px-3 py-2" />
-        </div>
-        <div>
-          <label class="text-sm font-medium">Password</label>
-          <input v-model="password" type="password" required class="mt-1 w-full rounded-xl border px-3 py-2" />
-        </div>
-
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
-
-        <button
-          class="w-full rounded-xl bg-slate-900 text-white py-2 font-medium disabled:opacity-50"
-          :disabled="loading"
-        >
-          {{ loading ? 'Signing in…' : 'Sign in' }}
-        </button>
-      </form>
-
-      <div class="mt-4 text-sm text-slate-600">
-        No account?
-        <NuxtLink to="/register" class="font-medium text-slate-900 underline">Register</NuxtLink>
+    <form class="mt-6 space-y-4" @submit.prevent="submit">
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-ink-950/80">Email</label>
+        <input v-model="email" type="email" required class="input" placeholder="you@company.com" />
       </div>
+      <div class="space-y-1">
+        <label class="text-sm font-medium text-ink-950/80">Password</label>
+        <input v-model="password" type="password" required class="input" placeholder="••••••••" />
+      </div>
+
+      <div v-if="error" class="rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+        {{ error }}
+      </div>
+
+      <button class="btn-primary w-full" :disabled="loading">
+        {{ loading ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <div class="mt-5 text-sm text-ink-950/70">
+      No account?
+      <NuxtLink to="/register" class="font-medium text-ink-950 underline underline-offset-4">Register</NuxtLink>
     </div>
   </div>
 </template>
