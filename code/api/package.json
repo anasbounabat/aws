@@ -1,0 +1,22 @@
+{
+  "name": "api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server.ts",
+    "build": "echo \"TODO: build lambda bundle (Hono)\"",
+    "lint": "echo \"api: no lint\"",
+    "test": "echo \"api: no test\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1010.0",
+    "@aws-sdk/client-s3": "^3.1010.0",
+    "@aws-sdk/client-ses": "^3.1010.0",
+    "@hono/node-server": "^1.19.3",
+    "hono": "^4.9.0",
+    "jose": "^6.2.1",
+    "nanoid": "^5.1.7",
+    "postgres": "^3.4.8"
+  }
+}
+

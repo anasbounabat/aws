@@ -1,0 +1,11 @@
+{
+  "name": "domain",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo \"domain: no build\"",
+    "lint": "echo \"domain: no lint\"",
+    "test": "echo \"domain: no test\""
+  }
+}
+

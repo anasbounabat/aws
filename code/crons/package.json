@@ -1,0 +1,16 @@
+{
+  "name": "crons",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/backup.ts",
+    "build": "echo \"TODO: build cron lambdas\"",
+    "lint": "echo \"crons: no lint\"",
+    "test": "echo \"crons: no test\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1010.0",
+    "postgres": "^3.4.8"
+  }
+}
+

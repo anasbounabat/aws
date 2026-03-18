@@ -1,0 +1,12 @@
+{
+  "name": "www-assets",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo \"www-assets: nothing to build\"",
+    "dev": "echo \"www-assets: nothing to dev\"",
+    "lint": "echo \"www-assets: no lint\"",
+    "test": "echo \"www-assets: no test\""
+  }
+}
+

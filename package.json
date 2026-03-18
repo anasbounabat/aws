@@ -2,26 +2,38 @@
   "name": "aws",
   "type": "module",
   "private": true,
-  "imports": {
-    "#internal/nuxt/paths": "./node_modules/@nuxt/nitro-server/dist/runtime/utils/paths.mjs"
-  },
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "code/*",
+    "infrastructure"
+  ],
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "dev:api": "bun --cwd code/api run dev",
+    "migrate": "bun infrastructure/scripts/migrate.ts"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^6.19.1",
+    "@aws-sdk/client-cognito-identity-provider": "^3.1010.0",
     "@aws-sdk/client-s3": "^3.1010.0",
+    "@aws-sdk/client-ses": "^3.1010.0",
     "@aws-sdk/s3-request-presigner": "^3.1010.0",
+    "@hono/node-server": "^1.19.11",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "aws-amplify": "^6.16.3",
     "bcryptjs": "^3.0.3",
+    "hono": "^4.12.8",
     "jose": "^6.2.1",
     "nanoid": "^5.1.7",
     "nuxt": "^3.21.2",
     "postgres": "^3.4.8",
     "vue": "^3.5.30",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.17"
   }
 }

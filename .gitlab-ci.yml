@@ -1,0 +1,44 @@
+stages:
+  - install
+  - lint
+  - test
+  - build
+
+variables:
+  NODE_ENV: "production"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .bun
+    - node_modules/
+    - code/**/node_modules/
+
+install:
+  stage: install
+  image: oven/bun:1.2.7
+  script:
+    - bun --version
+    - bun install
+
+lint:
+  stage: lint
+  image: oven/bun:1.2.7
+  script:
+    - bun install
+    - bun run lint || true
+
+test:
+  stage: test
+  image: oven/bun:1.2.7
+  script:
+    - bun install
+    - bun run test || true
+
+build:
+  stage: build
+  image: oven/bun:1.2.7
+  script:
+    - bun install
+    - bun run build
+

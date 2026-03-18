@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:3.7.2
+    environment:
+      SERVICES: s3,cognito-idp,ses
+      DEBUG: "0"
+      DEFAULT_REGION: ${AWS_REGION:-eu-west-1}
+    ports:
+      - "4566:4566"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.bun
+    working_dir: /work
+    volumes:
+      - ./:/work
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/app
+      PORT: "8787"
+      AWS_ENDPOINT_URL: http://localstack:4566
+    depends_on:
+      - postgres
+      - localstack
+    ports:
+      - "8787:8787"
+    command: ["bun", "run", "dev:api"]
+
+volumes:
+  pgdata:
+
