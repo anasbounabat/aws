@@ -72,7 +72,9 @@ app.post('/auth/login', async (c) => {
   // Exchange a valid Cognito token for an app JWT (HS256)
   const body = await c.req.json().catch(() => ({}))
   const token = typeof body?.idToken === 'string' ? body.idToken : null
-  if (!token) return c.json({ error: 'idToken is required' }, 400)
+  if (!token) {
+    return c.json({ error: 'idToken is required', hint: 'Send JSON body: { "idToken": "<Cognito id token>" }' }, 400)
+  }
 
   let verified: { sub: string }
   try {
@@ -80,11 +82,30 @@ app.post('/auth/login', async (c) => {
   } catch (_err) {
     return c.json({ error: 'invalid idToken' }, 401)
   }
-  const sql = db()
-  const role = (await getUserRole(sql, verified.sub)) ?? 'user'
-  await upsertUserRole(sql, verified.sub, role)
-  const jwt = await signAppJwt({ sub: verified.sub, role })
-  return c.json({ token: jwt })
+
+  try {
+    const sql = db()
+    const role = (await getUserRole(sql, verified.sub)) ?? 'user'
+    await upsertUserRole(sql, verified.sub, role)
+    const jwt = await signAppJwt({ sub: verified.sub, role })
+    return c.json({ token: jwt })
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code
+    const msg = (err as Error)?.message || String(err)
+    // eslint-disable-next-line no-console
+    console.error('[auth/login] database error:', code || msg)
+    // RDS / réseau : timeout, pg_hba, SSL, etc.
+    if (code === 'CONNECT_TIMEOUT' || msg.includes('CONNECT_TIMEOUT') || msg.includes('ETIMEDOUT')) {
+      return c.json({ error: 'database_unreachable', hint: 'Lambda cannot reach RDS (VPC/SG/route)' }, 503)
+    }
+    if (msg.includes('pg_hba') || msg.includes('no encryption') || code === '28000') {
+      return c.json(
+        { error: 'database_auth_failed', hint: 'RDS may require SSL: add ?sslmode=require to DATABASE_URL' },
+        503
+      )
+    }
+    return c.json({ error: 'login_failed', hint: 'Check Lambda logs and DATABASE_URL' }, 500)
+  }
 })
 
 app.get('/me', requireUser, async (c) => {

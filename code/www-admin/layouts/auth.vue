@@ -1,5 +1,11 @@
 <template>
   <div class="min-h-screen bg-[rgb(var(--bg))]">
+    <img
+      :src="'/images/logo.jpg'"
+      alt="logo"
+      class="absolute top-4 right-4 w-24 h-16 object-cover rounded-lg opacity-90"
+      onerror="this.style.display='none'"
+    />
     <div class="grid min-h-screen place-items-center p-6">
       <div class="w-full max-w-sm">
         <div class="mb-6 text-center">

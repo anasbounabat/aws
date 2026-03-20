@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <rect width="120" height="40" rx="8" fill="#4F46E5"/>
+  <text x="12" y="27" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="white">Trello</text>
+  <circle cx="105" cy="20" r="8" fill="white" opacity="0.2"/>
+  <circle cx="105" cy="20" r="4" fill="white"/>
+</svg>

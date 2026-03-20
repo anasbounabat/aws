@@ -30,6 +30,9 @@ async function loginPassword() {
 
 <template>
   <div class="w-full max-w-md rounded-2xl border border-slate-600/50 bg-slate-800/80 p-6 shadow-xl">
+    <div class="mb-4 flex justify-center">
+      <img src="/images/logo.jpg" alt="Logo" class="h-10" />
+    </div>
     <div class="mb-3 flex justify-center">
       <span
         class="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-200"
@@ -75,11 +78,6 @@ async function loginPassword() {
       >
         {{ loading ? 'Connexion…' : 'Se connecter' }}
       </button>
-
-      <p class="text-center text-sm text-slate-400">
-        Pas de compte ?
-        <NuxtLink to="/register" class="font-medium text-indigo-300 underline hover:text-indigo-200">Créer un compte</NuxtLink>
-      </p>
     </form>
   </div>
 </template>

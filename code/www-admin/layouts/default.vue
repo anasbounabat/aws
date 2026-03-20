@@ -25,15 +25,7 @@ async function logout() {
     >
       <div class="border-b border-slate-800/80 p-5">
         <div class="flex items-center gap-3">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-black text-white shadow-lg shadow-violet-900/40"
-          >
-            A
-          </div>
-          <div>
-            <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300/90">Console</p>
-            <h1 class="text-lg font-bold tracking-tight text-white">Admin</h1>
-          </div>
+          <img src="/images/logo.jpg" alt="Logo" class="h-9 w-auto" />
         </div>
         <p class="mt-3 text-xs leading-relaxed text-slate-500">Gestion de la plateforme</p>
       </div>
