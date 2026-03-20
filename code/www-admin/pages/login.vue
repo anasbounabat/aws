@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth', middleware: ['redirect-if-auth'] })
 
+useHead({
+  title: 'Connexion admin',
+  meta: [{ name: 'robots', content: 'noindex, nofollow' }]
+})
+
 const auth = useAuth()
 
 const email = ref('')
@@ -25,7 +30,15 @@ async function loginPassword() {
 
 <template>
   <div class="w-full max-w-md rounded-2xl border border-slate-600/50 bg-slate-800/80 p-6 shadow-xl">
-    <h1 class="text-xl font-semibold text-white">Connexion admin</h1>
+    <div class="mb-3 flex justify-center">
+      <span
+        class="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-200"
+        data-testid="admin-badge"
+      >
+        Espace administrateur
+      </span>
+    </div>
+    <h1 class="text-center text-xl font-semibold text-white">Connexion admin</h1>
     <p class="mt-1 text-sm text-slate-400">Espace réservé — compte administrateur requis</p>
 
     <form class="mt-6 space-y-4" @submit.prevent="loginPassword">

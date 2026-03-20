@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
+useHead({
+  title: 'Inscription admin',
+  meta: [{ name: 'robots', content: 'noindex, nofollow' }]
+})
+
 const auth = useAuth()
 const router = useRouter()
 

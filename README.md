@@ -61,3 +61,10 @@ ENV=staging bash infrastructure/scripts/deploy-crons.sh
 ENV=staging bash infrastructure/scripts/deploy-front-user.sh
 ENV=staging bash infrastructure/scripts/deploy-front-admin.sh
 ```
+
+## CI / CD
+
+- **GitLab** : `.gitlab-ci.yml` — job `verify` (install, lint, test, build Turbo) sur chaque push ; jobs `deploy:staging` / `deploy:production` après `verify` sur les branches `staging` et `production` (AWS CLI + scripts `infrastructure/scripts/`). Configurer les credentials AWS en variables CI/CD GitLab.
+- **GitHub** : `.github/workflows/ci.yml` — même chaîne `verify` sur push et pull requests (sans déploiement automatique ; ajouter un workflow dédié + secrets AWS si tu déploies depuis GitHub).
+
+**Admin (prod)** : URL du type `https://<distribution-cloudfront-admin>/login` — titre de page : *Connexion admin · Console admin*.

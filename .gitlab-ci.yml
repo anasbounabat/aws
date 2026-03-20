@@ -1,56 +1,50 @@
+# CI/CD : vérification sur chaque push, déploiement AWS sur branches staging / production.
+# Variables GitLab à configurer : AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, (+ optionnel) fichiers .env injectés.
+
 stages:
-  - install
-  - lint
-  - test
-  - build
+  - verify
   - deploy
 
 variables:
-  NODE_ENV: "production"
+  NODE_ENV: production
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .bun
-    - node_modules/
-    - code/**/node_modules/
-
-install:
-  stage: install
+default:
   image: oven/bun:1.2.7
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - code/**/node_modules/
+      - .bun/
+
+# --- CI : lint, tests, build Turbo (tous les commits sauf tags) ---
+verify:
+  stage: verify
   script:
     - bun --version
     - bun install
-
-lint:
-  stage: lint
-  image: oven/bun:1.2.7
-  script:
-    - bun install
     - bun run lint
-
-test:
-  stage: test
-  image: oven/bun:1.2.7
-  script:
-    - bun install
     - bun run test
-
-build:
-  stage: build
-  image: oven/bun:1.2.7
-  script:
-    - bun install
     - bun run build
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: on_success
 
-deploy:staging:
+# --- CD : déploiement (nécessite verify OK + credentials AWS + .env dans le repo CI ou variables) ---
+.deploy_aws_base: &deploy_aws_base
   stage: deploy
   image: oven/bun:1.2.7
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "staging"'
+  needs:
+    - verify
   before_script:
     - apt-get update && apt-get install -y zip python3-pip
     - pip3 install --no-cache-dir awscli
+
+deploy:staging:
+  <<: *deploy_aws_base
+  rules:
+    - if: $CI_COMMIT_BRANCH == "staging"
   script:
     - export STAGE=stg
     - bun install
@@ -62,13 +56,9 @@ deploy:staging:
     - bash infrastructure/scripts/deploy-front-admin.sh
 
 deploy:production:
-  stage: deploy
-  image: oven/bun:1.2.7
+  <<: *deploy_aws_base
   rules:
-    - if: '$CI_COMMIT_BRANCH == "production"'
-  before_script:
-    - apt-get update && apt-get install -y zip python3-pip
-    - pip3 install --no-cache-dir awscli
+    - if: $CI_COMMIT_BRANCH == "production"
   script:
     - export STAGE=prd
     - bun install
@@ -78,4 +68,3 @@ deploy:production:
     - bash infrastructure/scripts/deploy-assets.sh
     - bash infrastructure/scripts/deploy-front-user.sh
     - bash infrastructure/scripts/deploy-front-admin.sh
-

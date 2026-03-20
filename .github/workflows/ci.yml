@@ -1,0 +1,33 @@
+# CI sur GitHub : lint, tests, build (pas de déploiement — ajouter un workflow deploy avec OIDC AWS si besoin).
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2'
+
+      - name: Install
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        run: bun run build
