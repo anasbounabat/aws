@@ -2,9 +2,9 @@ import { Amplify } from 'aws-amplify'
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const region = config.public.awsRegion
-  const userPoolId = config.public.cognitoUserPoolId
-  const clientId = config.public.cognitoClientId
+  const region = config.public.awsRegion || 'eu-north-1'
+  const userPoolId = config.public.cognitoUserPoolId || 'eu-north-1_5Xu7e8HPN'
+  const clientId = config.public.cognitoClientId || '73kgsif82avgb5h6me0p8d9pnc'
 
   // Avoid blank screen in local dev when env vars are missing.
   if (!region || !userPoolId || !clientId) {
@@ -20,7 +20,8 @@ export default defineNuxtPlugin(() => {
       Auth: {
         Cognito: {
           userPoolId,
-          userPoolClientId: clientId
+          userPoolClientId: clientId,
+          region
         }
       }
     })
