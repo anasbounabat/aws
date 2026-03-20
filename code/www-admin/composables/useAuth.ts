@@ -17,6 +17,17 @@ export function useAuth() {
 
   const { $api } = useNuxtApp() as any
 
+  function readCookieClient(name: string): string | null {
+    if (typeof document === 'undefined') return null
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+    if (!match) return null
+    try {
+      return decodeURIComponent(match[1] ?? '')
+    } catch {
+      return match[1] ?? null
+    }
+  }
+
   function normalizeEmail(email: string) {
     return email.trim().toLowerCase()
   }
@@ -33,6 +44,15 @@ export function useAuth() {
     return msg
   }
 
+  function isAlreadySignedInError(e: any) {
+    const name = e?.name || e?.__type
+    const msg = (e?.message || '').toLowerCase()
+    return (
+      name === 'UserAlreadyAuthenticatedException' ||
+      (msg.includes('already') && msg.includes('signed in'))
+    )
+  }
+
   async function exchangeToken() {
     const session = await fetchAuthSession({ forceRefresh: true })
     const idToken = session.tokens?.idToken?.toString()
@@ -43,16 +63,24 @@ export function useAuth() {
       body: { idToken }
     })
     appJwt.value = res.token
+    return res.token
   }
 
-  async function loadMe() {
-    if (!appJwt.value) {
+  async function loadMe(tokenOverride?: string) {
+    let token = tokenOverride || appJwt.value
+    if (!token) token = readCookieClient('app_jwt')
+    if (!token) {
       me.value = null
       return null
     }
+    token = String(token).replace(/^"|"$/g, '')
     loading.value = true
     try {
-      const res = await $api<{ user: Me }>('/me')
+      const res = await $api<{ user: Me }>('/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       me.value = res.user
       return res.user
     } catch {
@@ -67,9 +95,14 @@ export function useAuth() {
   async function loginWithPassword(email: string, password: string) {
     try {
       await signIn({ username: normalizeEmail(email), password })
-      await exchangeToken()
-      await loadMe()
+      const token = await exchangeToken()
+      await loadMe(token)
     } catch (e: any) {
+      if (isAlreadySignedInError(e)) {
+        const token = await exchangeToken()
+        await loadMe(token)
+        return
+      }
       throw new Error(amplifyErrorMessage(e))
     }
   }

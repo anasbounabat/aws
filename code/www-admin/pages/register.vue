@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'auth' })
+
 const auth = useAuth()
 const router = useRouter()
 
@@ -38,7 +40,7 @@ async function submitConfirm() {
   loading.value = true
   try {
     await auth.confirm(email.value, code.value)
-    info.value = 'Compte confirmé. Connecte-toi puis demande le rôle admin.'
+    info.value = 'Compte confirmé. Connecte-toi avec ton compte admin.'
     setTimeout(() => router.push('/login'), 700)
   } catch (e: any) {
     error.value = e?.message || 'Confirmation failed'
@@ -63,63 +65,85 @@ async function resend() {
 </script>
 
 <template>
-  <div class="max-w-md">
-    <h1 class="text-2xl font-semibold">Admin Register</h1>
-    <p class="text-sm text-slate-300 mt-1">Création de compte via Cognito (email/password).</p>
+  <div class="w-full max-w-md rounded-2xl border border-slate-600/50 bg-slate-800/80 p-6 shadow-xl">
+    <h1 class="text-xl font-semibold text-white">Inscription admin</h1>
+    <p class="mt-1 text-sm text-slate-400">Création de compte via Cognito (email / mot de passe)</p>
 
-    <div class="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div class="space-y-2">
+    <div class="mt-6 space-y-4">
+      <div>
+        <label for="admin-reg-email" class="mb-1.5 block text-sm font-medium text-slate-200">Email</label>
         <input
+          id="admin-reg-email"
           v-model="email"
-          class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 disabled:opacity-70"
-          placeholder="email"
+          type="email"
+          autocomplete="email"
+          placeholder="vous@exemple.com"
           :disabled="step === 'confirm'"
+          class="w-full rounded-lg border border-slate-500 bg-slate-700/80 px-4 py-3 text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30 disabled:opacity-70"
         />
+      </div>
 
-        <template v-if="step === 'signup'">
+      <template v-if="step === 'signup'">
+        <div>
+          <label for="admin-reg-password" class="mb-1.5 block text-sm font-medium text-slate-200">Mot de passe</label>
           <input
+            id="admin-reg-password"
             v-model="password"
             type="password"
-            class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2"
-            placeholder="password"
+            autocomplete="new-password"
+            placeholder="••••••••"
+            class="w-full rounded-lg border border-slate-500 bg-slate-700/80 px-4 py-3 text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
           />
-          <button
-            class="w-full rounded-xl bg-purple-400/20 text-purple-50 px-3 py-2 text-sm font-semibold hover:bg-purple-400/25 transition disabled:opacity-60"
-            :disabled="loading"
-            @click="submitSignup"
-          >
-            {{ loading ? 'Création…' : 'Créer mon compte' }}
-          </button>
-        </template>
+        </div>
+        <button
+          type="button"
+          class="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition hover:bg-indigo-600 disabled:pointer-events-none disabled:opacity-50"
+          :disabled="loading"
+          @click="submitSignup"
+        >
+          {{ loading ? 'Création…' : 'Créer mon compte' }}
+        </button>
+      </template>
 
-        <template v-else>
+      <template v-else>
+        <div>
+          <label for="admin-reg-code" class="mb-1.5 block text-sm font-medium text-slate-200">Code reçu par email</label>
           <input
+            id="admin-reg-code"
             ref="codeEl"
             v-model="code"
-            class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2"
-            placeholder="code reçu par email"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="123456"
+            class="w-full rounded-lg border border-slate-500 bg-slate-700/80 px-4 py-3 text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
           />
-          <button
-            class="w-full rounded-xl bg-purple-400/20 text-purple-50 px-3 py-2 text-sm font-semibold hover:bg-purple-400/25 transition disabled:opacity-60"
-            :disabled="loading"
-            @click="submitConfirm"
-          >
-            {{ loading ? 'Validation…' : 'Confirmer' }}
-          </button>
-          <button class="w-full rounded-xl bg-white/10 hover:bg-white/15 text-slate-50 px-3 py-2 text-sm" :disabled="loading" @click="resend">
-            Renvoyer le code
-          </button>
-        </template>
+        </div>
+        <button
+          type="button"
+          class="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition hover:bg-indigo-600 disabled:pointer-events-none disabled:opacity-50"
+          :disabled="loading"
+          @click="submitConfirm"
+        >
+          {{ loading ? 'Validation…' : 'Confirmer' }}
+        </button>
+        <button
+          type="button"
+          class="w-full rounded-lg border border-slate-500 bg-slate-700/50 py-3 text-sm font-medium text-slate-200 transition hover:bg-slate-700 disabled:opacity-50"
+          :disabled="loading"
+          @click="resend"
+        >
+          Renvoyer le code
+        </button>
+      </template>
 
-        <p v-if="info" class="text-sm text-purple-200">{{ info }}</p>
-        <p v-if="error" class="text-sm text-red-200">{{ error }}</p>
-      </div>
+      <p v-if="info" class="text-sm text-indigo-300">{{ info }}</p>
+      <p v-if="error" class="text-sm text-red-300">{{ error }}</p>
     </div>
 
-    <div class="mt-4 text-sm text-slate-200">
+    <p class="mt-6 text-center text-sm text-slate-400">
       Déjà un compte ?
-      <NuxtLink to="/login" class="underline">Se connecter</NuxtLink>
-    </div>
+      <NuxtLink to="/login" class="font-medium text-indigo-300 underline hover:text-indigo-200">Connexion admin</NuxtLink>
+    </p>
   </div>
 </template>
-

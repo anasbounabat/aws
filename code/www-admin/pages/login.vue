@@ -1,6 +1,7 @@
 <script setup lang="ts">
+definePageMeta({ layout: 'auth', middleware: ['redirect-if-auth'] })
+
 const auth = useAuth()
-const router = useRouter()
 
 const email = ref('')
 const password = ref('')
@@ -12,10 +13,10 @@ async function loginPassword() {
   loading.value = true
   try {
     await auth.loginWithPassword(email.value, password.value)
-    if (auth.me.value?.role !== 'admin') throw new Error('Not an admin')
-    await router.push('/admin')
+    if (auth.me.value?.role !== 'admin') throw new Error('Accès réservé aux administrateurs.')
+    await navigateTo('/admin/stats')
   } catch (e: any) {
-    error.value = e?.message || 'Login failed'
+    error.value = e?.message || 'Échec de la connexion'
   } finally {
     loading.value = false
   }
@@ -23,34 +24,49 @@ async function loginPassword() {
 </script>
 
 <template>
-  <div class="max-w-md">
-    <h1 class="text-2xl font-semibold">Admin Login</h1>
-    <p class="text-sm text-slate-300 mt-1">Connexion admin via Cognito. L’accès sera refusé si rôle ≠ admin.</p>
+  <div class="w-full max-w-md rounded-2xl border border-slate-600/50 bg-slate-800/80 p-6 shadow-xl">
+    <h1 class="text-xl font-semibold text-white">Connexion admin</h1>
+    <p class="mt-1 text-sm text-slate-400">Espace réservé — compte administrateur requis</p>
 
-    <div class="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div class="space-y-2">
-        <input v-model="email" class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2" placeholder="email" />
+    <form class="mt-6 space-y-4" @submit.prevent="loginPassword">
+      <div>
+        <label for="admin-login-email" class="mb-1.5 block text-sm font-medium text-slate-200">Email</label>
         <input
+          id="admin-login-email"
+          v-model="email"
+          type="email"
+          autocomplete="email"
+          placeholder="vous@exemple.com"
+          class="w-full rounded-lg border border-slate-500 bg-slate-700/80 px-4 py-3 text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
+        />
+      </div>
+
+      <div>
+        <label for="admin-login-password" class="mb-1.5 block text-sm font-medium text-slate-200">Mot de passe</label>
+        <input
+          id="admin-login-password"
           v-model="password"
           type="password"
-          class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2"
-          placeholder="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+          class="w-full rounded-lg border border-slate-500 bg-slate-700/80 px-4 py-3 text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
         />
-        <button
-          class="w-full rounded-xl bg-purple-400/20 text-purple-50 px-3 py-2 text-sm font-semibold hover:bg-purple-400/25 transition disabled:opacity-60"
-          :disabled="loading"
-          @click="loginPassword"
-        >
-          {{ loading ? 'Connexion…' : 'Se connecter' }}
-        </button>
-        <p v-if="error" class="text-sm text-red-200">{{ error }}</p>
       </div>
-    </div>
 
-    <div class="mt-4 text-sm text-slate-200">
-      Pas de compte ?
-      <NuxtLink to="/register" class="underline">Créer un compte</NuxtLink>
-    </div>
+      <p v-if="error" class="text-sm text-red-300">{{ error }}</p>
+
+      <button
+        type="submit"
+        :disabled="loading || !email.trim() || !password"
+        class="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition hover:bg-indigo-600 disabled:pointer-events-none disabled:opacity-50"
+      >
+        {{ loading ? 'Connexion…' : 'Se connecter' }}
+      </button>
+
+      <p class="text-center text-sm text-slate-400">
+        Pas de compte ?
+        <NuxtLink to="/register" class="font-medium text-indigo-300 underline hover:text-indigo-200">Créer un compte</NuxtLink>
+      </p>
+    </form>
   </div>
 </template>
-

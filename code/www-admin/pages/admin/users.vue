@@ -17,12 +17,18 @@ onMounted(async () => {
 
 <template>
   <div>
-    <h2 class="text-3xl font-bold mb-8 text-white">Utilisateurs</h2>
+    <header class="mb-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400/90">Admin</p>
+      <h2 class="mt-1 text-3xl font-bold tracking-tight text-white">Utilisateurs</h2>
+      <p class="mt-2 text-sm text-slate-400">Liste des comptes enregistrés.</p>
+    </header>
 
-    <div v-if="loading" class="text-slate-300">Loading…</div>
-    <div v-else class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div v-if="loading" class="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+      Chargement…
+    </div>
+    <div v-else class="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/40 shadow-xl shadow-black/10">
       <table class="w-full text-sm">
-        <thead class="bg-slate-700/60 text-slate-200">
+        <thead class="bg-slate-800/80 text-slate-300">
           <tr>
             <th class="text-left px-4 py-3">ID / Sub</th>
             <th class="text-left px-4 py-3">Email</th>
