@@ -17,6 +17,31 @@ import { sendInvitationEmail } from './services/aws_ses'
 
 export const app = new Hono<{ Variables: { auth: AppAuth; sub: string } }>()
 
+function isMissingRelationError(err: unknown) {
+  const code = (err as { code?: string } | null)?.code
+  return code === '42P01'
+}
+
+async function upsertUserRole(sql: ReturnType<typeof db>, sub: string, role: 'admin' | 'user') {
+  try {
+    await sql`INSERT INTO users (id, role) VALUES (${sub}, ${role}) ON CONFLICT (id) DO NOTHING`
+  } catch (err) {
+    if (!isMissingRelationError(err)) throw err
+    await sql`INSERT INTO app_users (user_sub, role) VALUES (${sub}, ${role}) ON CONFLICT (user_sub) DO NOTHING`
+  }
+}
+
+async function getUserRole(sql: ReturnType<typeof db>, sub: string): Promise<'admin' | 'user' | null> {
+  try {
+    const rows = await sql<{ role: 'admin' | 'user' }[]>`SELECT role FROM users WHERE id = ${sub} LIMIT 1`
+    return rows[0]?.role ?? null
+  } catch (err) {
+    if (!isMissingRelationError(err)) throw err
+    const rows = await sql<{ role: 'admin' | 'user' }[]>`SELECT role FROM app_users WHERE user_sub = ${sub} LIMIT 1`
+    return rows[0]?.role ?? null
+  }
+}
+
 app.use('*', logger())
 app.use(
   '*',
@@ -39,7 +64,7 @@ app.post('/users', async (c) => {
 
   const verified = await verifyCognitoJwt(token)
   const sql = db()
-  await sql`INSERT INTO users (id, role) VALUES (${verified.sub}, 'user') ON CONFLICT (id) DO NOTHING`
+  await upsertUserRole(sql, verified.sub, 'user')
   return c.json({ ok: true })
 })
 
@@ -49,13 +74,15 @@ app.post('/auth/login', async (c) => {
   const token = typeof body?.idToken === 'string' ? body.idToken : null
   if (!token) return c.json({ error: 'idToken is required' }, 400)
 
-  const verified = await verifyCognitoJwt(token)
-  const sql = db()
-  const rows = await sql<{ role: 'admin' | 'user' }[]>`SELECT role FROM users WHERE id = ${verified.sub} LIMIT 1`
-  const role = rows[0]?.role ?? 'user'
-  if (!rows.length) {
-    await sql`INSERT INTO users (id, role) VALUES (${verified.sub}, ${role}) ON CONFLICT (id) DO NOTHING`
+  let verified: { sub: string }
+  try {
+    verified = await verifyCognitoJwt(token)
+  } catch (_err) {
+    return c.json({ error: 'invalid idToken' }, 401)
   }
+  const sql = db()
+  const role = (await getUserRole(sql, verified.sub)) ?? 'user'
+  await upsertUserRole(sql, verified.sub, role)
   const jwt = await signAppJwt({ sub: verified.sub, role })
   return c.json({ token: jwt })
 })

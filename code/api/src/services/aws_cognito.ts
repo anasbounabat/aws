@@ -6,8 +6,9 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider'
 
 function client() {
-  const region = process.env.AWS_REGION
-  if (!region) throw new Error('AWS_REGION is required')
+  const poolId = process.env.COGNITO_USER_POOL_ID
+  if (!poolId) throw new Error('COGNITO_USER_POOL_ID is required')
+  const region = poolId.split('_')[0]
   return new CognitoIdentityProviderClient({ region })
 }
 

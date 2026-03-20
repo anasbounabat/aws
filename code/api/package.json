@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/server.ts",
-    "build": "rm -rf dist && mkdir -p dist && bun build src/lambda.ts --outdir dist --format esm --target bun",
+    "build": "rm -rf dist && mkdir -p dist && bun build src/lambda.ts --outdir dist --format esm --target node && cp package.json dist/",
     "lint": "echo \"api: no lint\"",
     "test": "echo \"api: no test\""
   },

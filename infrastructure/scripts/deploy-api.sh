@@ -16,7 +16,8 @@ require SES_FROM_EMAIL
 echo "Build API bundle (bun)"
 (cd code/api && bun install && bun run build)
 
-ZIP_PATH="$(mktemp -t api-lambda.XXXXXX.zip)"
+ZIP_PATH="$(mktemp -t api-lambda-XXXXXX).zip"
+rm -f "$ZIP_PATH"
 trap 'rm -f "$ZIP_PATH"' EXIT
 
 echo "Package zip: $ZIP_PATH"

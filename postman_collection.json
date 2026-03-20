@@ -1,0 +1,393 @@
+{
+  "info": {
+    "name": "Trello Clone API",
+    "description": "Collection complète — toutes les routes POST/GET/PATCH/DELETE\nBase URL : http://localhost:8787\n\nÉtape 1 : Lancer 'Login Cognito' → copier idToken\nÉtape 2 : Lancer 'Login API' → le token est auto-sauvegardé\nÉtape 3 : Toutes les autres requêtes utilisent {{token}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8787" },
+    { "key": "token", "value": "" },
+    { "key": "team_id", "value": "3" },
+    { "key": "project_id", "value": "3" },
+    { "key": "task_id", "value": "9" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "1. Login Cognito (obtenir idToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-amz-json-1.1" },
+              { "key": "X-Amz-Target", "value": "AWSCognitoIdentityProviderService.InitiateAuth" }
+            ],
+            "url": "https://cognito-idp.eu-north-1.amazonaws.com/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"AuthFlow\": \"USER_PASSWORD_AUTH\",\n  \"ClientId\": \"73kgsif82avgb5h6me0p8d9pnc\",\n  \"AuthParameters\": {\n    \"USERNAME\": \"anasbnbt@gmail.com\",\n    \"PASSWORD\": \"Anas2004!\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "2. Login API (échanger idToken → app JWT)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "if (res.token) { pm.collectionVariables.set('token', res.token); console.log('Token sauvegardé'); }"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"<COLLER_ID_TOKEN_ICI>\"\n}"
+            }
+          }
+        },
+        {
+          "name": "3. GET /me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/me"
+          }
+        },
+        {
+          "name": "4. PATCH /me (modifier nom)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Anas Bounabat\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Teams",
+      "item": [
+        {
+          "name": "GET /teams",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/teams"
+          }
+        },
+        {
+          "name": "POST /teams (créer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/teams",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mon Equipe\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /teams/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/teams/{{team_id}}"
+          }
+        },
+        {
+          "name": "GET /teams/:id/members",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/teams/{{team_id}}/members"
+          }
+        },
+        {
+          "name": "POST /teams/:id/invitations",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/teams/{{team_id}}/invitations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invite@example.com\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Projects",
+      "item": [
+        {
+          "name": "GET /teams/:id/projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/teams/{{team_id}}/projects"
+          }
+        },
+        {
+          "name": "POST /teams/:id/projects (créer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/teams/{{team_id}}/projects",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mon Projet\",\n  \"description\": \"Description du projet\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /projects/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/projects/{{project_id}}"
+          }
+        },
+        {
+          "name": "PATCH /projects/:id (modifier)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/projects/{{project_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Projet Modifié\",\n  \"description\": \"Nouvelle description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /projects/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/projects/{{project_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Tasks",
+      "item": [
+        {
+          "name": "GET /projects/:id/tasks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/projects/{{project_id}}/tasks"
+          }
+        },
+        {
+          "name": "POST /projects/:id/tasks (créer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/projects/{{project_id}}/tasks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nouvelle tâche\",\n  \"description\": \"Description de la tâche\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /tasks/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tasks/{{task_id}}"
+          }
+        },
+        {
+          "name": "PATCH /tasks/:id (modifier)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/tasks/{{task_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tâche modifiée\",\n  \"description\": \"Nouvelle description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /tasks/:id/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/tasks/{{task_id}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DOING\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /tasks/:id/assign",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/tasks/{{task_id}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userSub\": \"c0dc590c-7001-7005-b7a2-81e6ab43790c\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /tasks/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tasks/{{task_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📎 Assets (pièces jointes)",
+      "item": [
+        {
+          "name": "POST /tasks/:id/assets (obtenir URL upload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/tasks/{{task_id}}/assets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"photo.png\",\n  \"contentType\": \"image/png\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT S3 (uploader l'image - mettre uploadUrl)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "image/png" }],
+            "url": "<COLLER_UPLOAD_URL_ICI>",
+            "body": {
+              "mode": "file",
+              "file": { "src": "" }
+            }
+          }
+        },
+        {
+          "name": "GET /tasks/:id/assets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tasks/{{task_id}}/assets"
+          }
+        },
+        {
+          "name": "DELETE /assets/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/assets/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📨 Invitations",
+      "item": [
+        {
+          "name": "GET /invitations (mes invitations)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/invitations"
+          }
+        },
+        {
+          "name": "POST /invitations/:id/accept",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/invitations/1/accept"
+          }
+        },
+        {
+          "name": "POST /invitations/:id/reject",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/invitations/1/reject"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Admin",
+      "item": [
+        {
+          "name": "GET /admin/stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/admin/stats"
+          }
+        },
+        {
+          "name": "GET /admin/users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/admin/users"
+          }
+        },
+        {
+          "name": "GET /admin/backups",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/admin/backups"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -10,10 +10,9 @@ type Verified = {
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null
 
 function issuer() {
-  const region = process.env.AWS_REGION
   const poolId = process.env.COGNITO_USER_POOL_ID
-  if (!region) throw new Error('AWS_REGION is required')
   if (!poolId) throw new Error('COGNITO_USER_POOL_ID is required')
+  const region = poolId.split('_')[0]
   return `https://cognito-idp.${region}.amazonaws.com/${poolId}`
 }
 
