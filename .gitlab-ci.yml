@@ -3,6 +3,7 @@ stages:
   - lint
   - test
   - build
+  - deploy
 
 variables:
   NODE_ENV: "production"
@@ -26,14 +27,14 @@ lint:
   image: oven/bun:1.2.7
   script:
     - bun install
-    - bun run lint || true
+    - bun run lint
 
 test:
   stage: test
   image: oven/bun:1.2.7
   script:
     - bun install
-    - bun run test || true
+    - bun run test
 
 build:
   stage: build
@@ -41,4 +42,40 @@ build:
   script:
     - bun install
     - bun run build
+
+deploy:staging:
+  stage: deploy
+  image: oven/bun:1.2.7
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+  before_script:
+    - apt-get update && apt-get install -y zip python3-pip
+    - pip3 install --no-cache-dir awscli
+  script:
+    - export STAGE=stg
+    - bun install
+    - bun infrastructure/scripts/migrate.ts
+    - bash infrastructure/scripts/deploy-api.sh
+    - bash infrastructure/scripts/deploy-crons.sh
+    - bash infrastructure/scripts/deploy-assets.sh
+    - bash infrastructure/scripts/deploy-front-user.sh
+    - bash infrastructure/scripts/deploy-front-admin.sh
+
+deploy:production:
+  stage: deploy
+  image: oven/bun:1.2.7
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "production"'
+  before_script:
+    - apt-get update && apt-get install -y zip python3-pip
+    - pip3 install --no-cache-dir awscli
+  script:
+    - export STAGE=prd
+    - bun install
+    - bun infrastructure/scripts/migrate.ts
+    - bash infrastructure/scripts/deploy-api.sh
+    - bash infrastructure/scripts/deploy-crons.sh
+    - bash infrastructure/scripts/deploy-assets.sh
+    - bash infrastructure/scripts/deploy-front-user.sh
+    - bash infrastructure/scripts/deploy-front-admin.sh
 

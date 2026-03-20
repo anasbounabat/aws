@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --port 3003",
-    "build": "nuxt build",
+    "build": "nuxt generate",
     "preview": "nuxt preview --port 5003"
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
-    "aws-amplify": "^6.15.5",
-    "@aws-amplify/auth": "^1.15.4",
+    "aws-amplify": "^6.16.3",
+    "@aws-amplify/auth": "^6.19.1",
     "nuxt": "^3.21.2"
   }
 }

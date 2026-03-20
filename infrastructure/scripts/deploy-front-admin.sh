@@ -9,7 +9,7 @@ if [[ -z "${CF_ADMIN_DISTRIBUTION_ID}" ]]; then
 fi
 
 echo "Build www-admin"
-(cd code/www-admin && npm run build)
+(cd code/www-admin && bun install && bun run build)
 
 echo "Upload build output to S3 (admin)"
 aws s3 sync "code/www-admin/.output/public" "s3://${ADMIN_BUCKET}/" --delete

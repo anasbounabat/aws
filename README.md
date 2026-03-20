@@ -41,3 +41,23 @@ npm run dev
 ## Déploiement
 
 Voir `infrastructure/scripts/` (STG/PRD).
+
+### Environnements STG/PRD (prêts à remplir)
+
+- `environments/staging/.env`
+- `environments/production/.env`
+
+Les scripts de déploiement acceptent désormais :
+
+- `ENV=staging|production` (guide)
+- ou `STAGE=stg|prd` (legacy)
+
+Exemples :
+
+```bash
+ENV=staging bash infrastructure/scripts/migrate.sh
+ENV=staging bash infrastructure/scripts/deploy-api.sh
+ENV=staging bash infrastructure/scripts/deploy-crons.sh
+ENV=staging bash infrastructure/scripts/deploy-front-user.sh
+ENV=staging bash infrastructure/scripts/deploy-front-admin.sh
+```

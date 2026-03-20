@@ -9,6 +9,7 @@ const step = ref<'signup' | 'confirm'>('signup')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const info = ref<string | null>(null)
+const codeEl = ref<HTMLInputElement | null>(null)
 
 async function submitSignup() {
   error.value = null
@@ -18,6 +19,8 @@ async function submitSignup() {
     await auth.register(email.value, password.value)
     step.value = 'confirm'
     info.value = 'Un code de confirmation a été envoyé par email.'
+    await nextTick()
+    codeEl.value?.focus()
   } catch (e: any) {
     error.value = e?.message || 'Register failed'
   } finally {
@@ -27,6 +30,11 @@ async function submitSignup() {
 
 async function submitConfirm() {
   error.value = null
+  info.value = null
+  if (!code.value.trim()) {
+    error.value = 'Le code est requis.'
+    return
+  }
   loading.value = true
   try {
     await auth.confirm(email.value, code.value)
@@ -61,7 +69,12 @@ async function resend() {
 
     <div class="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
       <div class="space-y-2">
-        <input v-model="email" class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2" placeholder="email" />
+        <input
+          v-model="email"
+          class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 disabled:opacity-70"
+          placeholder="email"
+          :disabled="step === 'confirm'"
+        />
 
         <template v-if="step === 'signup'">
           <input
@@ -80,7 +93,12 @@ async function resend() {
         </template>
 
         <template v-else>
-          <input v-model="code" class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2" placeholder="code reçu par email" />
+          <input
+            ref="codeEl"
+            v-model="code"
+            class="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2"
+            placeholder="code reçu par email"
+          />
           <button
             class="w-full rounded-xl bg-purple-400/20 text-purple-50 px-3 py-2 text-sm font-semibold hover:bg-purple-400/25 transition disabled:opacity-60"
             :disabled="loading"

@@ -17,8 +17,24 @@ export function useAuth() {
 
   const { $api } = useNuxtApp() as any
 
+  function normalizeEmail(email: string) {
+    return email.trim().toLowerCase()
+  }
+
+  function amplifyErrorMessage(e: any) {
+    const name = e?.name || e?.__type
+    const msg = e?.message || String(e)
+    if (name === 'UserNotConfirmedException') {
+      return 'Ton compte n’est pas confirmé. Va sur Register → entre ton email → confirme avec le code reçu.'
+    }
+    if (name === 'NotAuthorizedException') {
+      return 'Email ou mot de passe incorrect.'
+    }
+    return msg
+  }
+
   async function exchangeToken() {
-    const session = await fetchAuthSession()
+    const session = await fetchAuthSession({ forceRefresh: true })
     const idToken = session.tokens?.idToken?.toString()
     if (!idToken) throw new Error('Missing Cognito idToken')
 
@@ -49,23 +65,27 @@ export function useAuth() {
   }
 
   async function loginWithPassword(email: string, password: string) {
-    await signIn({ username: email, password })
-    await exchangeToken()
-    await loadMe()
+    try {
+      await signIn({ username: normalizeEmail(email), password })
+      await exchangeToken()
+      await loadMe()
+    } catch (e: any) {
+      throw new Error(amplifyErrorMessage(e))
+    }
   }
 
   async function register(email: string, password: string) {
-    const res = await signUp({ username: email, password })
+    const res = await signUp({ username: normalizeEmail(email), password })
     return { ok: true, nextStep: res.nextStep }
   }
 
   async function confirm(email: string, code: string) {
-    await confirmSignUp({ username: email, confirmationCode: code })
+    await confirmSignUp({ username: normalizeEmail(email), confirmationCode: code })
     return { ok: true }
   }
 
   async function resend(email: string) {
-    await resendSignUpCode({ username: email })
+    await resendSignUpCode({ username: normalizeEmail(email) })
     return { ok: true }
   }
 

@@ -1,16 +1,17 @@
 <template>
-  <div class="min-h-screen bg-black text-slate-50">
-    <header class="sticky top-0 border-b border-white/10 bg-black/70 backdrop-blur">
-      <div class="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-        <NuxtLink to="/" class="font-semibold">www-admin</NuxtLink>
-        <nav class="text-sm text-slate-200 flex gap-4">
-          <NuxtLink to="/login">Login</NuxtLink>
-          <NuxtLink to="/register">Register</NuxtLink>
-          <NuxtLink to="/admin">Admin</NuxtLink>
-        </nav>
+  <div class="flex h-screen bg-slate-900 text-slate-100">
+    <aside class="w-64 bg-slate-800 p-6 border-r border-slate-700">
+      <h1 class="text-xl font-black text-red-500 mb-8">ADMIN PANEL</h1>
+      <nav class="space-y-3 text-sm font-medium">
+        <NuxtLink to="/admin/stats" class="block py-2 hover:bg-slate-700 px-3 rounded">📊 Statistiques</NuxtLink>
+        <NuxtLink to="/admin/users" class="block py-2 hover:bg-slate-700 px-3 rounded">👥 Utilisateurs</NuxtLink>
+        <NuxtLink to="/admin/backups" class="block py-2 hover:bg-slate-700 px-3 rounded">💾 Backups S3</NuxtLink>
+      </nav>
+      <div class="mt-8 text-xs text-slate-400">
+        <NuxtLink to="/login" class="hover:text-slate-200">Login</NuxtLink>
       </div>
-    </header>
-    <main class="mx-auto max-w-6xl px-4 py-8">
+    </aside>
+    <main class="flex-1 p-8 overflow-y-auto bg-slate-900">
       <slot />
     </main>
   </div>

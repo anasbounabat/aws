@@ -4,14 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --port 3000",
-    "build": "nuxt build",
+    "build": "nuxt generate",
     "preview": "nuxt preview --port 5000"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^6.19.1",
     "@nuxtjs/tailwindcss": "^6.14.0",
-    "aws-amplify": "^6.15.5",
-    "@aws-amplify/auth": "^1.15.4",
-    "nuxt": "^3.21.2"
+    "aws-amplify": "^6.16.3",
+    "nuxt": "^3.21.2",
+    "sortablejs": "^1.15.7",
+    "vuedraggable": "^4.1.0"
   }
 }
-

@@ -29,3 +29,5 @@ Maintiens une liste ici:
 - [ ] SES identities / verified domains
 - [ ] CloudWatch log groups
 
+Version détaillée: `AWS_DELETE_CHECKLIST.md`
+

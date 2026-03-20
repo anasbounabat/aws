@@ -17,8 +17,45 @@ export function useAuth() {
 
   const { $api } = useNuxtApp() as any
 
+  function readCookieClient(name: string): string | null {
+    if (typeof document === 'undefined') return null
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+    if (!match) return null
+    try {
+      return decodeURIComponent(match[1] ?? '')
+    } catch {
+      return match[1] ?? null
+    }
+  }
+
+  function normalizeEmail(email: string) {
+    return email.trim().toLowerCase()
+  }
+
+  function amplifyErrorMessage(e: any) {
+    const name = e?.name || e?.__type
+    const msg = e?.message || String(e)
+    if (name === 'UserNotConfirmedException') {
+      return 'Ton compte n’est pas confirmé. Va sur Register → entre ton email → confirme avec le code reçu.'
+    }
+    if (name === 'NotAuthorizedException') {
+      return 'Email ou mot de passe incorrect.'
+    }
+    return msg
+  }
+
+  /** True if Amplify says user is already signed in (e.g. session still active). */
+  function isAlreadySignedInError(e: any) {
+    const name = e?.name || e?.__type
+    const msg = (e?.message || '').toLowerCase()
+    return (
+      name === 'UserAlreadyAuthenticatedException' ||
+      msg.includes('already') && msg.includes('signed in')
+    )
+  }
+
   async function exchangeToken() {
-    const session = await fetchAuthSession()
+    const session = await fetchAuthSession({ forceRefresh: true })
     const idToken = session.tokens?.idToken?.toString()
     if (!idToken) throw new Error('Missing Cognito idToken')
 
@@ -27,16 +64,24 @@ export function useAuth() {
       body: { idToken }
     })
     appJwt.value = res.token
+    return res.token
   }
 
-  async function loadMe() {
-    if (!appJwt.value) {
+  async function loadMe(tokenOverride?: string) {
+    let token = tokenOverride || appJwt.value
+    if (!token) token = readCookieClient('app_jwt')
+    if (!token) {
       me.value = null
       return null
     }
+    token = String(token).replace(/^"|"$/g, '')
     loading.value = true
     try {
-      const res = await $api<{ user: Me }>('/me')
+      const res = await $api<{ user: Me }>('/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       me.value = res.user
       return res.user
     } catch {
@@ -49,23 +94,33 @@ export function useAuth() {
   }
 
   async function loginWithPassword(email: string, password: string) {
-    await signIn({ username: email, password })
-    await exchangeToken()
-    await loadMe()
+    try {
+      await signIn({ username: normalizeEmail(email), password })
+      const token = await exchangeToken()
+      await loadMe(token)
+    } catch (e: any) {
+      if (isAlreadySignedInError(e)) {
+        // Session déjà active : on récupère le token et on charge l'utilisateur, puis redirection dashboard
+        const token = await exchangeToken()
+        await loadMe(token)
+        return
+      }
+      throw new Error(amplifyErrorMessage(e))
+    }
   }
 
   async function register(email: string, password: string) {
-    const res = await signUp({ username: email, password })
+    const res = await signUp({ username: normalizeEmail(email), password })
     return { ok: true, nextStep: res.nextStep }
   }
 
   async function confirm(email: string, code: string) {
-    await confirmSignUp({ username: email, confirmationCode: code })
+    await confirmSignUp({ username: normalizeEmail(email), confirmationCode: code })
     return { ok: true }
   }
 
   async function resend(email: string) {
-    await resendSignUpCode({ username: email })
+    await resendSignUpCode({ username: normalizeEmail(email) })
     return { ok: true }
   }
 

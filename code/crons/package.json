@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/backup.ts",
-    "build": "echo \"TODO: build cron lambdas\"",
+    "build": "rm -rf dist && mkdir -p dist && bun build src/lambda-backup.ts --outdir dist --format esm --target bun",
     "lint": "echo \"crons: no lint\"",
     "test": "echo \"crons: no test\""
   },

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: awsproject_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Application (Monorepo Turborepo via Bun)
+  app:
+    build: .
+    container_name: awsproject_app
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+      # Exclude node_modules mapping if host has incompatible native modules
+      - /app/node_modules
+    ports:
+      - "3000:3000" # www-user
+      - "3003:3003" # www-admin
+      - "8787:8787" # api
+    environment:
+      # Use the docker networking to connect to the 'db' container
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/app
+    env_file:
+      - .env.docker
+    depends_on:
+      - db
+    # Install dependencies and start all dev servers
+    command: >
+      sh -c "bun install && bun run dev"
+
+volumes:
+  pgdata:

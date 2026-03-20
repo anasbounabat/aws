@@ -9,7 +9,7 @@ if [[ -z "${CF_USER_DISTRIBUTION_ID}" ]]; then
 fi
 
 echo "Build www-user"
-(cd code/www-user && npm run build)
+(cd code/www-user && bun install && bun run build)
 
 echo "Upload build output to S3 (user)"
 aws s3 sync "code/www-user/.output/public" "s3://${USER_BUCKET}/" --delete

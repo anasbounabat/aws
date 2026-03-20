@@ -41,6 +41,44 @@ services:
       - "8787:8787"
     command: ["bun", "run", "dev:api"]
 
+  www-user:
+    image: node:20-alpine
+    working_dir: /work
+    volumes:
+      - ./code/www-user:/work
+    env_file:
+      - .env
+    environment:
+      NUXT_PUBLIC_API_BASE_URL: http://api:8787
+      NUXT_PUBLIC_AWS_REGION: ${AWS_REGION:-}
+      NUXT_PUBLIC_COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID:-}
+      NUXT_PUBLIC_COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID:-}
+    depends_on:
+      - api
+      - localstack
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+  www-admin:
+    image: node:20-alpine
+    working_dir: /work
+    volumes:
+      - ./code/www-admin:/work
+    env_file:
+      - .env
+    environment:
+      NUXT_PUBLIC_API_BASE_URL: http://api:8787
+      NUXT_PUBLIC_AWS_REGION: ${AWS_REGION:-}
+      NUXT_PUBLIC_COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID:-}
+      NUXT_PUBLIC_COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID:-}
+    depends_on:
+      - api
+      - localstack
+    ports:
+      - "3003:3003"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
 volumes:
   pgdata:
 

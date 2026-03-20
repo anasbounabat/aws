@@ -155,10 +155,11 @@ app.post('/teams/:teamId/invitations', requireUser, async (c) => {
   if (!email) return c.json({ error: 'email is required' }, 400)
 
   const sql = db()
-  const isOwner = await sql<{ ok: boolean }[]>`
-    SELECT true AS ok FROM team_members WHERE team_id = ${teamId} AND user_id = ${auth.sub} AND role = 'owner' LIMIT 1
+  // Any team member can invite (per user stories). Still requires membership.
+  const isMember = await sql<{ ok: boolean }[]>`
+    SELECT true AS ok FROM team_members WHERE team_id = ${teamId} AND user_id = ${auth.sub} LIMIT 1
   `
-  if (!isOwner.length) return c.json({ error: 'forbidden' }, 403)
+  if (!isMember.length) return c.json({ error: 'forbidden' }, 403)
 
   const inv = await sql<{ id: number; team_id: number; email: string; status: string; created_at: string }[]>`
     INSERT INTO invitations (team_id, email, invited_by_sub, status)

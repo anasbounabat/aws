@@ -7,7 +7,11 @@ export type AppAuth = { sub: string; role: 'admin' | 'user' }
 export async function requireUser(c: Context, next: Next) {
   const header = c.req.header('authorization') || ''
   const match = header.match(/^Bearer\s+(.+)$/i)
-  if (!match) return c.json({ error: 'Unauthorized' }, 401)
+  if (!match) {
+    // eslint-disable-next-line no-console
+    console.warn('[auth] Missing/invalid Authorization header')
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
 
   try {
     const verified = await verifyAppJwt(match[1]!)
@@ -23,7 +27,9 @@ export async function requireUser(c: Context, next: Next) {
     c.set('auth', verified satisfies AppAuth)
     c.set('sub', verified.sub)
     await next()
-  } catch {
+  } catch (err: any) {
+    // eslint-disable-next-line no-console
+    console.warn('[auth] verifyAppJwt failed:', err?.message || err)
     return c.json({ error: 'Unauthorized' }, 401)
   }
 }
