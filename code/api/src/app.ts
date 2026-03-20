@@ -201,15 +201,30 @@ app.post('/teams/:teamId/invitations', requireUser, async (c) => {
   const acceptUrl = `${base}/invitations/${inv[0]!.id}/accept`
   const rejectUrl = `${base}/invitations/${inv[0]!.id}/reject`
 
-  await sendInvitationEmail({
-    to: email,
-    teamName: team[0]?.name || 'Team',
-    inviterName: inviter.name || inviter.email || 'Someone',
-    acceptUrl,
-    rejectUrl
-  })
+  let emailSent = true
+  let emailError: string | null = null
+  try {
+    await sendInvitationEmail({
+      to: email,
+      teamName: team[0]?.name || 'Team',
+      inviterName: inviter.name || inviter.email || 'Someone',
+      acceptUrl,
+      rejectUrl
+    })
+  } catch (err: any) {
+    emailSent = false
+    emailError = err?.message || 'send invitation email failed'
+    // eslint-disable-next-line no-console
+    console.error('[invitations] email send failed:', emailError)
+  }
 
-  return c.json({ invitation: inv[0]! })
+  return c.json({
+    invitation: inv[0]!,
+    email: {
+      sent: emailSent,
+      error: emailError
+    }
+  })
 })
 
 app.get('/invitations', requireUser, async (c) => {

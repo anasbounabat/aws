@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run src/backup.ts",
+    "dev": "echo \"crons: pas de serveur local — lancer un backup avec: npm run backup (après avoir exporté DATABASE_URL et BACKUP_S3_BUCKET)\"",
+    "backup": "bun run src/backup.ts",
     "build": "rm -rf dist && mkdir -p dist && bun build src/lambda-backup.ts --outdir dist --format esm --target bun",
     "lint": "echo \"crons: no lint\"",
     "test": "echo \"crons: no test\""

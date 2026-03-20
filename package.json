@@ -13,7 +13,8 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "dev:api": "bun --cwd code/api run dev",
-    "migrate": "bun infrastructure/scripts/migrate.ts"
+    "migrate": "bun infrastructure/scripts/migrate.ts",
+    "backup:cron": "bun --cwd code/crons run backup"
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.19.1",

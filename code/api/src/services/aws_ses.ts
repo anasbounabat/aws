@@ -3,8 +3,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 function client() {
-  const region = process.env.AWS_REGION
-  if (!region) throw new Error('AWS_REGION is required')
+  const region =
+    process.env.AWS_REGION ||
+    (process.env.COGNITO_USER_POOL_ID ? process.env.COGNITO_USER_POOL_ID.split('_')[0] : null)
+  if (!region) throw new Error('AWS_REGION or COGNITO_USER_POOL_ID is required')
   const endpoint = process.env.AWS_ENDPOINT_URL
   return new SESClient({ region, endpoint: endpoint || undefined })
 }

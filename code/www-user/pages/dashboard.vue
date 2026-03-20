@@ -26,6 +26,13 @@ const team = ref<any | null>(null)
 const members = ref<any[]>([])
 const projects = ref<any[]>([])
 const selectedProjectId = ref<string | null>(null)
+const canInviteUsers = computed(() => Boolean(selectedTeamId.value && team.value))
+const selectedTeamName = computed(() => team.value?.name || '')
+const inviteModalDescription = computed(() =>
+  selectedTeamName.value
+    ? `Envoyez une invitation pour rejoindre ${selectedTeamName.value}.`
+    : "Envoyez une invitation par e-mail pour rejoindre l'équipe."
+)
 
 const tasks = ref<any[]>([])
 const activeTask = ref<any | null>(null)
@@ -54,6 +61,7 @@ const creatingTeam = ref(false)
 const inviteOpen = ref(false)
 const inviteEmail = ref('')
 const inviting = ref(false)
+const inviteInputRef = ref<HTMLInputElement | null>(null)
 
 // Inline Project Creation
 const projectName = ref('')
@@ -79,10 +87,15 @@ function openTeamCreateModal() {
 }
 
 function openInviteModal() {
-  if (!selectedTeamId.value) return
-  closeAllModals()
+  if (!canInviteUsers.value) {
+    toast.push({ kind: 'error', title: "Sélectionnez d'abord une équipe pour inviter des membres" })
+    return
+  }
   inviteEmail.value = ''
-  inviteOpen.value = true
+  inviteOpen.value = false
+  nextTick(() => {
+    inviteInputRef.value?.focus()
+  })
 }
 
 const quickTitle = ref<Record<Status, string>>({ TODO: '', DOING: '', DONE: '' })
@@ -143,8 +156,19 @@ async function invite() {
   if (!selectedTeamId.value || !inviteEmail.value.trim()) return
   inviting.value = true
   try {
-    await $api(`/teams/${selectedTeamId.value}/invitations`, { method: 'POST', body: { email: inviteEmail.value.trim() } })
-    toast.push({ kind: 'success', title: 'Invitation envoyée' })
+    const res = await $api(`/teams/${selectedTeamId.value}/invitations`, {
+      method: 'POST',
+      body: { email: inviteEmail.value.trim() }
+    })
+    if (res?.email?.sent === false) {
+      toast.push({
+        kind: 'error',
+        title: 'Invitation créée, email non envoyé',
+        message: res?.email?.error || 'Vérifiez SES_FROM_EMAIL et la config AWS.'
+      })
+    } else {
+      toast.push({ kind: 'success', title: 'Invitation envoyée' })
+    }
     inviteEmail.value = ''
     inviteOpen.value = false
   } catch (e: any) {
@@ -294,9 +318,14 @@ watch(
       <div>
         <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tight">Tableau de Bord</h1>
         <p class="text-sm text-slate-400 mt-1">Gérez vos équipes, projets et toutes vos tâches au même endroit sans clics superflus.</p>
+        <p class="text-xs mt-2" :class="canInviteUsers ? 'text-emerald-300' : 'text-amber-300'">
+          {{ canInviteUsers ? `Vous pouvez inviter des membres dans "${selectedTeamName}".` : 'Sélectionnez une équipe pour activer les invitations.' }}
+        </p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        <AppButton variant="secondary" @click="openInviteModal" class="hover:shadow-glow transition-all">Inviter Membre</AppButton>
+        <AppButton variant="secondary" :disabled="!canInviteUsers" @click="openInviteModal" class="hover:shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Inviter un membre
+        </AppButton>
       </div>
     </header>
 
@@ -324,6 +353,27 @@ watch(
             <AppButton size="sm" variant="ghost" class="shrink-0 p-1.5 bg-white/5 hover:bg-white/10" @click="openTeamCreateModal">
               + Équipe
             </AppButton>
+          </div>
+        </div>
+
+        <div class="rounded-2xl app-border border app-surface p-4">
+          <div class="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-3">Invitation rapide</div>
+          <div v-if="canInviteUsers" class="space-y-3">
+            <input
+              ref="inviteInputRef"
+              v-model="inviteEmail"
+              type="email"
+              autocomplete="email"
+              class="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner"
+              placeholder="collaborateur@entreprise.com"
+              @keydown.enter.prevent="invite"
+            />
+            <AppButton variant="secondary" class="w-full" :disabled="inviting || !inviteEmail.trim()" @click="invite">
+              {{ inviting ? 'Envoi…' : "Envoyer l'invitation" }}
+            </AppButton>
+          </div>
+          <div v-else class="text-xs text-amber-300">
+            Sélectionnez une équipe pour inviter d'autres membres.
           </div>
         </div>
 
@@ -511,7 +561,7 @@ watch(
     <AppModal
       :open="inviteOpen"
       title="Inviter un membre"
-      description="Envoyez une invitation par e-mail pour rejoindre l'équipe."
+      :description="inviteModalDescription"
       @close="inviteOpen = false"
     >
       <div class="space-y-4">
